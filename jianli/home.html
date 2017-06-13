@@ -1,0 +1,555 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript">
+    //轮播图
+         $(window).bind('load' , function(){
+            //初始化
+            (function(){
+                //图片数组
+                var imgArr=[
+                    'banner.jpg',
+                    'banner.jpg',
+                    'banner.jpg',
+                    'banner.jpg',
+                    'banner.jpg'
+                ];
+                //添加元素
+                var sli='';
+                var si='';
+                $(imgArr).each(function(index,val){                    
+                    si+='<i class="starzoo-icon starzoo-icon-radius"></i>';                    
+                    sli+='<a href="javascript:;" class="index" style="background:url(img/'+val+') center center no-repeat"></a>';
+                });
+                $('.banner-index').html(sli);
+                $('.carousel-dot').html(si)
+            })();
+            $('.banner-index').find('a').css('width',$('.banner-index').parent().width());
+            focusWrap({
+                moveEle:$('.banner-index'),
+                replaceEle:$('.carousel-dot'),
+                replaceClass:'active',
+                moveWidth:$('.banner-index').parent().width(),
+                time:4000,
+                resize:'true'
+            });
+        });
+        function focusWrap(json){
+            if(!json) return;
+            //处理默认
+            json.replaceClass=json.replaceClass||'active';
+            json.moveWidth=json.moveWidth||json.moveEle.parent().width();
+            json.time=json.time||3000;
+            json.moveEle.dex=0;;
+            json.replaceEle.children().removeClass(json.replaceClass);
+            json.replaceEle.children().eq(0).addClass(json.replaceClass);
+            json.moveEle.moveComple=true;
+            //布局处理
+         //   json.moveEle.html(json.moveEle.html()+json.moveEle.html());
+            json.moveEle.css('width',json.moveEle.children().length*json.moveEle.children().eq(0).width());            
+            //自动播放
+            json.moveEle.timer=setInterval(function(){
+                json.moveEle.dex++;
+                autoPlay(json);
+            },json.time);
+            //处理鼠标悬停
+            json.moveEle.parent().hover(function(){
+                clearInterval(json.moveEle.timer);
+            },function(){
+                json.moveEle.timer=setInterval(function(){
+                    json.moveEle.dex++;
+                    autoPlay(json);
+                },json.time);
+            });
+            //处理导航点击
+            json.replaceEle.children().each(function(dex,element){
+                $(element).click(function(){
+                    if(!json.moveEle.moveComple) return;
+                    json.replaceEle.children().removeClass(json.replaceClass);
+                    json.replaceEle.children().eq(dex).addClass(json.replaceClass);
+                    json.moveEle.stop().animate({
+                        left:-dex*json.moveWidth
+                    });
+                    json.moveEle.dex=dex;
+                });
+            });
+            //处理窗体改变
+            json.resize && $(window).bind('resize',function(){
+                var minW=json.moveEle.parent().width();
+                minW<1200 && (minW=1200);
+                json.moveEle.find('a').css('width',minW);
+                json.moveEle.css('width',json.moveEle.children().length*json.moveEle.children().eq(0).width()); 
+                json.moveEle.css('left',-json.moveEle.dex*json.moveEle.children().eq(0).width()); 
+                json.moveWidth=json.moveEle.parent().width();
+            });
+        } 
+        //自动播放
+        function autoPlay(json){
+            json.moveEle.moveComple=false;
+            json.moveEle.stop().animate({
+                left:-json.moveEle.dex*json.moveWidth
+            },
+            {
+                complete:function(){
+                    json.moveEle.dex%=json.moveEle.children().length/2;
+                    json.moveEle.moveComple=true;
+                    json.moveEle.css('left',-json.moveEle.dex*json.moveWidth);
+                    json.replaceEle.children().removeClass(json.replaceClass);
+                    json.replaceEle.children().eq(json.moveEle.dex).addClass(json.replaceClass);
+                }
+            })
+        }   
+
+
+    // 模拟滚动条
+        $(window).bind('load' , function(){
+
+            //元素获取
+            var oScroll =$('.brand-list'),
+                oDiv  = oScroll.find('.list'),
+                oDivT =  oDiv.find('.scroll-top'),
+                oScr  = oScroll.find('.scroll'),
+                oScrEle = oScr.find('.bar');
+            //初始化
+            var height = oScr.height()*oDiv.height()/oDivT.height();
+            oScrEle.css({
+                "top":0,
+                "height":height
+            });
+            //添加滚动事件
+            
+            addScroll(oScroll[0] , function(down){
+                var t=oScrEle[0].offsetTop;
+                if(down){//下滚
+                    t+=10;
+                }else{
+                    t-=10;
+                }
+                setTop(t);
+            });
+            //设置滚动条函数
+            function setTop (t){
+                var nMax=oScr.height() - oScrEle.height();
+                if(t>=nMax){
+                   t=nMax;
+                }
+                if(t<=0) {
+                    t=0;
+                }
+                var top=t/nMax*(oDiv.height()-oDivT.height());
+                oDivT.css("top" , top);
+                oScrEle.css("top" , t);
+
+            }
+        });  
+    //滚轮事件函数
+    function addScroll(obj, fn){ // 回调函数    
+        // 判断浏览器，加事件
+        if (window.navigator.userAgent.indexOf('Firefox') != -1){
+            obj.addEventListener('DOMMouseScroll', _setDown, false);
+        }
+        else{ // IE Chrome
+            obj.onmousewheel=_setDown;
+        }   
+        function _setDown(ev){
+            var oEvent=ev||event;
+            var down=false;         
+            // 判断down
+            if (oEvent.wheelDelta){ // IE chrome
+                if (oEvent.wheelDelta < 0){ // 向下
+                    down=true;
+                }
+                else{
+                    down=false;
+                }
+            }else{
+                if (oEvent.detail < 0){ // 向上
+                    down=false;
+                }
+                else{
+                    down=true;
+                }
+            }           
+            fn(down);           
+            oEvent.preventDefault && oEvent.preventDefault();
+            return false;
+        }
+    }  
+    </script>
+</head>
+<body>
+    <!-- head -->
+    <div class="starzoo-header">
+        <div class="head">
+            <div class="headlogo"><img src="img/logo.png"></div>
+            <div class="menu">
+                <a href="javascript:;" class="navlink-item">品牌分类<i class="starzoo-icon starzoo-icon-triangle-dwn"></i></a>
+                <a href="javascript:;" class="navlink-item on">产品分类<i class="starzoo-icon starzoo-icon-triangle-up"></i></a>
+                <div class="search">
+                    <i class="starzoo-icon starzoo-icon-search"></i>
+                    <input type="text" class="searching" placeholder="Search">
+                </div>
+                <a href="javascript:;" class="navlink-item">登录</a>
+                <a href="javascript:;" class="navlink-item">购物车(0)</a>
+
+                <!-- 品牌分类 -->
+                <div class="brand-list">
+                    <div class="title">品牌分类<span class="english">Brand<em class="highlight">classification</em></span></div>
+                    <div class="scroll"><span class="bar"></span></div>
+                    <div class="list">
+                        <div class="scroll-top">
+                            <div class="details">
+                                <span class="cap">A</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">B</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">C</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">D</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">E</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+
+                            <div class="details">
+                                <span class="cap">F</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">G</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                            <div class="details">
+                                <span class="cap">H</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+
+
+                            <div class="details">
+                                <span class="cap">I</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+
+
+                            <div class="details">
+                                <span class="cap">J</span>
+                                <p class="classlist">
+                                    <a href="javascript:;" class="brand">ABT-VOLKSWAGEN</a>
+                                    <a href="javascript:;" class="brand">ADV_1</a>
+                                    <a href="javascript:;" class="brand">Akrapovic</a>
+                                    <a href="javascript:;" class="brand">RQRAY<a>
+                                    <a href="javascript:;" class="brand">AP RACING</a>
+                                    <a href="javascript:;" class="brand">AC Schnitzer</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end -->
+
+                <!-- 产品分类 -->
+                <div class="product-list hide">
+                    <div class="title">产品分类<span class="english">Brand<em class="highlight">classification</em></span></div>
+                    <div class="list">
+                        <div class="details">
+                            <span class="cap">外观</span>
+                            <p class="classlist">
+                                <a href="javascript:;" class="brand">包围</a>
+                                <a href="javascript:;" class="brand">轮毂</a>
+                                <a href="javascript:;" class="brand">保险杠及护栏</a>
+                                <a href="javascript:;" class="brand">护板及踏杠</a>
+                                <a href="javascript:;" class="brand">其他</a>
+                                <a href="javascript:;" class="brand">品牌套件</a>
+                            </p>
+                        </div>
+
+                        <div class="details">
+                            <span class="cap">性能</span>
+                            <p class="classlist">
+                                <a href="javascript:;" class="brand">避震\悬挂</a>
+                                <a href="javascript:;" class="brand">底盘</a>
+                                <a href="javascript:;" class="brand">进气</a>
+                                <a href="javascript:;" class="brand">排气</a>
+                                <a href="javascript:;" class="brand">涡轮</a>
+                                <a href="javascript:;" class="brand">ECU</a>
+                                <a href="javascript:;" class="brand">仪表</a>
+                                <a href="javascript:;" class="brand">传动系统</a>
+                                <a href="javascript:;" class="brand">刹车系统</a>
+                                <a href="javascript:;" class="brand">转向系统</a>
+                                <a href="javascript:;" class="brand">点火线圈</a>
+                                <a href="javascript:;" class="brand">稳压器</a>
+                                <a href="javascript:;" class="brand">皮带轮</a>
+                                <a href="javascript:;" class="brand">油冷</a>
+                                <a href="javascript:;" class="brand">中冷</a>
+                            </p>
+                        </div>
+
+
+                        <div class="details">
+                            <span class="cap">用品</span>
+                            <p class="classlist">
+                                <a href="javascript:;" class="brand">灯光</a>
+                                <a href="javascript:;" class="brand">踏板</a>
+                                <a href="javascript:;" class="brand">添加剂</a>
+                                <a href="javascript:;" class="brand">越野用品</a>
+                                <a href="javascript:;" class="brand">螺丝</a>
+                                <a href="javascript:;" class="brand">底盘装甲</a>
+                                <a href="javascript:;" class="brand">踏板</a>
+                            </p>
+                        </div>
+
+
+                        <div class="details">
+                            <span class="cap">消耗品</span>
+                            <p class="classlist">                                
+                                <a href="javascript:;" class="brand">机油</a>
+                                <a href="javascript:;" class="brand">轮胎</a>
+                                <a href="javascript:;" class="brand">火花塞</a>
+                                <a href="javascript:;" class="brand">刹车片</a>
+                                <a href="javascript:;" class="brand">机滤</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- end -->
+            </div>
+        </div>        
+    </div>
+    <!-- headEnd -->
+    <!-- main -->
+    <div class="starzoo-main">
+        <div class="current-location">
+            <div class="navlocation">
+                产品搜索 &gt; 共1,000件
+            </div>
+        </div>
+        <div class="focus-listwrap">
+            <div class="banner-index clearfix">
+                <!-- <li class="index">
+                    <a href="javascript:;"><img src="img/banner.jpg"></a>
+                </li>
+                <li class="index">
+                    <a href="javascript:;"><img src="img/banner.jpg"></a>
+                </li>
+                <li class="index">
+                    <a href="javascript:;"><img src="img/banner.jpg"></a>
+                </li>
+                <li class="index">
+                    <a href="javascript:;"><img src="img/banner.jpg"></a>
+                </li>
+                <li class="index">
+                    <a href="javascript:;"><img src="img/banner.jpg"></a>
+                </li> -->
+            </div>
+            <div class="carousel-dot">
+                <!-- <i class="starzoo-icon starzoo-icon-radius"></i>
+                <i class="starzoo-icon starzoo-icon-radius active"></i>
+                <i class="starzoo-icon starzoo-icon-radius"></i>
+                <i class="starzoo-icon starzoo-icon-radius"></i>
+                <i class="starzoo-icon starzoo-icon-radius"></i> -->
+            </div>
+        </div>
+
+        <div class="doc">
+            <div class="caption">
+                <div class="introduce">
+                    <img src="img/entrance.jpg">
+                    按品牌、车型、等字段搜索改装件，<br />
+                    进行在线预订、下订单
+                </div>
+
+                <div class="introduce">
+                    <img src="img/solution.jpg">
+                    查看推送的整车改装方案，<br />
+                    按改装件列表有选择的直接预订、下订单
+                </div>
+
+                <div class="introduce last">
+                    <img src="img/recommend.jpg">
+                    查看推送的新产品分享信息，<br />
+                    按改装件列表有选择的直接预订、下订单
+                </div>
+            </div>
+            <div class="shoplist">
+                <div class="shopping-des-l">
+                    <div class="shopping-img"><img src="img/shopping.jpg"></div>
+                    <div class="shopping-des">
+                        <h3 class="shoppingname">BBS CS 日本原产铸造轮毂 多条幅Y辐条 双色造型 高性能运动轮毂</h3>
+                        <p class="shoppinginfo">核心业务：制造及开发优质轻质合金轮毂；是宝马、奥迪、保时捷、大众、奔驰、路虎、美洲豹、沃尔沃、标致-雪铁龙、雷诺等世界著名汽车品牌的原配供应商；更是法拉利和玛莎拉蒂跑车的独家轮毂供应商。</p>
+                        <div class="shopping-img-small">
+                            <a href="javascript:;" class="info"><img src="img/tissmall.png"></a>
+                        </div>
+                        <div class="order">
+                            <span class="money"><em class="mall">&yen;</em>21999.00</span>
+                            <a href="javascript:;" class="putbtn">加入购物车</a>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="shopping-des-r">
+                    <div class="shopping-img"><img src="img/shopping2.jpg"></div>
+                    <div class="shopping-des">
+                        <h3 class="shoppingname">TPorsche911 GT3/RS (991) 2015</h3>
+                        <p class="shoppinginfo">The titanium Evolution Line is a full system <br />
+                                designed to give noticeably increased power <br />
+                                at higher revs. With superb attention to .....
+                        </p>
+                        <div class="shopping-img-small">
+                            <a href="javascript:;" class="info"><img src="img/enginesmall.png"></a>
+                        </div>
+                        <div class="order">
+                            <span class="money"><em class="mall">&yen;</em>21999.00</span>
+                            <a href="javascript:;" class="putbtn">加入购物车</a>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <div class="shopping-des-l">
+                    <div class="shopping-img"><img src="img/shopping.jpg"></div>
+                    <div class="shopping-des">
+                        <h3 class="shoppingname">BBS CS 日本原产铸造轮毂 多条幅Y辐条 双色造型 高性能运动轮毂</h3>
+                        <p class="shoppinginfo">核心业务：制造及开发优质轻质合金轮毂；是宝马、奥迪、保时捷、大众、奔驰、路虎、美洲豹、沃尔沃、标致-雪铁龙、雷诺等世界著名汽车品牌的原配供应商；更是法拉利和玛莎拉蒂跑车的独家轮毂供应商。</p>
+                        <div class="shopping-img-small">
+                            <a href="javascript:;" class="info"><img src="img/tissmall.png"></a>
+                        </div>
+                        <div class="order">
+                            <span class="money"><em class="mall">&yen;</em>21999.00</span>
+                            <a href="javascript:;" class="putbtn">加入购物车</a>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="shopping-des-r">
+                    <div class="shopping-img"><img src="img/shopping2.jpg"></div>
+                    <div class="shopping-des">
+                        <h3 class="shoppingname">TPorsche911 GT3/RS (991) 2015</h3>
+
+                        <p class="shoppinginfo">The titanium Evolution Line is a full system <br />
+                                designed to give noticeably increased power <br />
+                                at higher revs. With superb attention to .....
+                        </p>
+                        <div class="shopping-img-small">
+                            <a href="javascript:;" class="info"><img src="img/enginesmall.png"></a>
+                        </div>
+                        <div class="order">
+                            <span class="money"><em class="mall">&yen;</em>21999.00</span>
+                            <a href="javascript:;" class="putbtn">加入购物车</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="showmore"><a href="javascript:;" class="btn">查看更多</a></div>
+        </div>
+    </div>
+    <!-- mianEnd -->
+    <div class="starzoo-footer">
+        <div class="aboutme-foot">
+            <div class="cantacts">
+                <div class="footer-log"><img src="img/footlog.png"></div>
+                <div class="address">
+                    <img src="img/weixin.png" class="weixinpiv">
+                    <p class="des"><span class="fl">中国上海市杨浦区长阳路1687号长阳谷1号楼4层409室</span><span class="fr">邮编 200090</span><br />Company Address: Rm409, 4/F, No.1 building, <br />No. 1687 Changyang Rd, Yangpu district, Shanghai, 200090, CHINA  </p>
+                    <div class="share">
+                        <a href="http://www.StarZoo.com.cn" class="gohomepage">www.StarZoo.com.cn</a>
+                        <span class="fr">
+                            <a href="javascript:;"><i class="starzoo-icon starzoo-icon-mail"></i></a>
+                            <em class="share-iconlist">
+                                <a href="javascript:;"><i class="starzoo-icon starzoo-icon-weibo"></i></a><a href="javascript:;"><i class="starzoo-icon starzoo-icon-tweibo"></i></a><a href="javascript:;"><i class="starzoo-icon starzoo-icon-weixin"></i></a>                            
+                            </em>
+                        </span>
+                    </div>
+                </div>
+            </div>            
+        </div>
+        <div class="copyright-foot">
+            <div class="foot-nav">
+                <span class="nav"><img src="img/footlog2.png"><a href="javascript:;" class="highlight">About</a> / <a href="javascript:;" class="highlight">Shop</a> /  <a href="javascript:;" class="highlight">Contacts</a></span>
+                <span class="copyright">Copyright © 2015 Starzoo.com All Rights Reserved</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
